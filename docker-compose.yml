@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # MongoDB Atlas replacement for local development
+  mongodb:
+    image: mongo:7.0
+    container_name: travel-lead-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - travel-network
+
+  # Node backend service
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: travel-lead-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/travel-lead-assistant
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=gemini-3.5-flash
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET:-your_super_secret_access_key_min_32_chars_long}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-your_super_secret_refresh_key_min_32_chars_long}
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
+    depends_on:
+      - mongodb
+    networks:
+      - travel-network
+
+  # Vite frontend service
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: travel-lead-client
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - travel-network
+
+volumes:
+  mongo-data:
+    driver: local
+
+networks:
+  travel-network:
+    driver: bridge

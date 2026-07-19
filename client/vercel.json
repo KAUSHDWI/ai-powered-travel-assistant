@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "routes": [
+    {
+      "src": "/api/v1/(.*)",
+      "dest": "https://travel-lead-api.onrender.com/api/v1/$1"
+    },
+    {
+      "src": "/health",
+      "dest": "https://travel-lead-api.onrender.com/health"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
